@@ -5,8 +5,14 @@ venv/
 __pycache__/
 *.pyc
 
-# Data - DVC will track this
-data/
+# DVC will track this
+# Ignore the large files inside data subdirectories
+data/raw/*
+data/processed/*
+
+# Keep empty directories by tracking .gitkeep files (a common convention)
+# You can create an empty file named ".gitkeep" in data/processed
+!data/**/.gitkeep
 
 # Notebook checkpoints
 .ipynb_checkpoints
