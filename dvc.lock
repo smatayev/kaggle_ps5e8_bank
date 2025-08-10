@@ -1,0 +1,80 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: c03179d4b0927faabe8daaae5a1c6e5f.dir
+      size: 89884639
+      nfiles: 3
+    - path: src/preprocess.py
+      hash: md5
+      md5: 6435d6eebbf3ec2919d25f0e0d5b6b47
+      size: 4070
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: dfa8a0a1af6425d5a7dc820d9fd62ad5.dir
+      size: 205806893
+      nfiles: 1
+  split:
+    cmd: python src/split.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: dfa8a0a1af6425d5a7dc820d9fd62ad5.dir
+      size: 205806893
+      nfiles: 1
+    - path: src/split.py
+      hash: md5
+      md5: 1f51dd72578a903385948582f5c7252c
+      size: 1868
+    outs:
+    - path: data/split
+      hash: md5
+      md5: b031c8eaa297937d1e7cf091ff76b7e4.dir
+      size: 204011348
+      nfiles: 2
+  train_and_evaluate:
+    cmd: python src/train_and_evaluate.py
+    deps:
+    - path: data/split
+      hash: md5
+      md5: b031c8eaa297937d1e7cf091ff76b7e4.dir
+      size: 204011348
+      nfiles: 2
+    - path: src/train_and_evaluate.py
+      hash: md5
+      md5: a3c8a3535b800c5d4e68ab7a3f119dae
+      size: 3284
+    params:
+      params.yaml:
+        model:
+          name: XGBoostClassifier
+          dir: artifacts/model
+          params:
+            booster: gbtree
+            colsample_bytree: 0.6
+            eta: 0.3
+            gamma: 5
+            grow_policy: lossguide
+            max_bin: 1023
+            max_depth: 9
+            max_leaves: 255
+            n_estimators: 400
+            objective: reg:logistic
+            reg_alpha: 1.875
+            reg_lambda: 2.5
+            subsample: 0.8
+            tree_method: hist
+    outs:
+    - path: artifacts/metrics/metrics.json
+      hash: md5
+      md5: a6ffbc49b53132421930ced5513cd2ef
+      size: 105
+    - path: artifacts/model
+      hash: md5
+      md5: 3a30bdbbe55e9630678051bcf2612702.dir
+      size: 630620
+      nfiles: 1
