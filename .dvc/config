@@ -1,0 +1,4 @@
+[core]
+    remote = my_gdrive
+['remote "my_gdrive"']
+    url = ../../kaggle-ps5e8-dvc-storage
