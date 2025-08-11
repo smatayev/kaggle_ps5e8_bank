@@ -1,11 +1,14 @@
 stages:
   preprocess:
-    cmd: python src/preprocess.py
+    cmd: python3 src/preprocess.py
     deps:
     - data/raw
     - src/preprocess.py
     outs:
+    - artifacts/preprocessor
     - data/processed
+    params:
+    - preprocessor
   split:
     cmd: python src/split.py
     deps:
