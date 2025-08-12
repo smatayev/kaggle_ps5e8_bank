@@ -20,11 +20,24 @@ def optimize(cfg: DictConfig):
         trial_cfg = cfg.copy()
         
         # Suggest hyperparameters for Optuna to try using the 'trial' object
-        trial_cfg.model.params.n_estimators = trial.suggest_int("n_estimators", 100, 1000, step=50)
-        trial_cfg.model.params.max_depth = trial.suggest_int("max_depth", 3, 10)
-        trial_cfg.model.params.eta = trial.suggest_float("eta", 0.01, 0.3, log=True)
-        trial_cfg.model.params.subsample = trial.suggest_float("subsample", 0.5, 1.0)
-        trial_cfg.model.params.colsample_bytree = trial.suggest_float("colsample_bytree", 0.5, 1.0)
+        # --- Dynamic Hyperparameter Search Space ---
+        if trial_cfg.model.name == "XGBoostClassifier":
+            trial_cfg.model.params.n_estimators = trial.suggest_int("n_estimators", 100, 1000, step=50)
+            trial_cfg.model.params.max_depth = trial.suggest_int("max_depth", 3, 10)
+            trial_cfg.model.params.eta = trial.suggest_float("eta", 0.01, 0.3, log=True)
+            trial_cfg.model.params.subsample = trial.suggest_float("subsample", 0.5, 1.0)
+            trial_cfg.model.params.colsample_bytree = trial.suggest_float("colsample_bytree", 0.5, 1.0)
+        
+        elif trial_cfg.model.name == "LGBMClassifier":
+            trial_cfg.model.params.n_estimators = trial.suggest_int("n_estimators", 100, 1000, step=50)
+            trial_cfg.model.params.learning_rate = trial.suggest_float("learning_rate", 0.01, 0.3, log=True)
+            trial_cfg.model.params.num_leaves = trial.suggest_int("num_leaves", 20, 300)
+            trial_cfg.model.params.max_depth = trial.suggest_int("max_depth", 3, 12)
+            trial_cfg.model.params.subsample = trial.suggest_float("subsample", 0.6, 1.0)
+            trial_cfg.model.params.colsample_bytree = trial.suggest_float("colsample_bytree", 0.6, 1.0)
+        
+        else:
+            raise ValueError(f"Optimization not configured for model: {trial_cfg.model.name}")
 
         # Run the training and evaluation function with the new config
         try:
