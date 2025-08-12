@@ -4,6 +4,7 @@ from omegaconf import DictConfig
 import pandas as pd
 import joblib
 from xgboost import XGBClassifier
+import lightgbm as lgb 
 from imblearn.over_sampling import SMOTE
 
 @hydra.main(config_path="../conf", config_name="config", version_base=None)
@@ -32,10 +33,13 @@ def train_final_model(cfg: DictConfig):
     print("3. Training the final model on all data...")
     model_params = dict(cfg.model.params)
     
-    final_model = XGBClassifier(
-        random_state=cfg.base.random_state,
-        **model_params
-    )
+    # Dynamic model selection based on Hydra config
+    if cfg.model.name == "XGBoostClassifier":
+        final_model = XGBClassifier(**model_params)
+    elif cfg.model.name == "LGBMClassifier":
+        final_model = lgb.LGBMClassifier(**model_params)
+    else:
+        raise ValueError(f"Unsupported model type: {cfg.model.name}")
     
     final_model.fit(X_train_resampled, y_train_resampled)
 

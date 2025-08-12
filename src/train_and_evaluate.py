@@ -5,6 +5,7 @@ import pandas as pd
 import json
 import joblib
 from xgboost import XGBClassifier
+import lightgbm as lgb 
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score
 from imblearn.over_sampling import SMOTE
 import mlflow
@@ -51,10 +52,13 @@ def train_and_evaluate(cfg: DictConfig):
         # Convert Hydra's DictConfig to a regular Python dictionary for unpacking
         model_params = dict(cfg.model.params)
         
-        model = XGBClassifier(
-            random_state=cfg.base.random_state,
-            **model_params
-        )
+        # Dynamic model selection based on Hydra config
+        if cfg.model.name == "XGBoostClassifier":
+            model = XGBClassifier(**model_params)
+        elif cfg.model.name == "LGBMClassifier":
+            model = lgb.LGBMClassifier(**model_params)
+        else:
+            raise ValueError(f"Unsupported model type: {cfg.model.name}")
         
         model.fit(X_train_resampled, y_train_resampled)
 
