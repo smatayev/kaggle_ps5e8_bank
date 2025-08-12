@@ -29,3 +29,8 @@ split_data:
 metrics:
   dir: artifacts/metrics
   filename: metrics.json
+
+kaggle:
+  competition_name: "playground-series-s5e8"
+  submission_file: "submission.csv"
+  submission_message: "Automated submission via API"

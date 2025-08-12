@@ -17,5 +17,9 @@ data/processed/*
 # Notebook checkpoints
 .ipynb_checkpoints
 
-# Hydra configurations for each ru
+# MLflow and Hydra outputs
+mlruns/
 outputs/
+
+# Submission file
+submission.csv
