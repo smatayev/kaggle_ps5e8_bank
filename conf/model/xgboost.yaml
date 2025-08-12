@@ -4,17 +4,19 @@ dir: artifacts/model
 filename: model.joblib
 final_filename: final_model.joblib
 params:
+  # --- Updated with Optuna's best trial results ---
+  n_estimators: 500
+  max_depth: 10
+  eta: 0.18367460472613534
+  subsample: 0.6992357265534125
+  colsample_bytree: 0.8957388945076682
+  # --- Other params that remain the same ---
   booster: gbtree
-  colsample_bytree: 0.6
-  eta: 0.3
   gamma: 5
   grow_policy: lossguide
   max_bin: 1023
-  max_depth: 9
   max_leaves: 255
-  n_estimators: 400
   objective: reg:logistic
   reg_alpha: 1.875
   reg_lambda: 2.5
-  subsample: 0.8
   tree_method: hist
