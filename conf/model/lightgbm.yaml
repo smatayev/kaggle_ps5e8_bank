@@ -6,12 +6,12 @@ final_filename: final_model.joblib
 params:
   objective: binary
   metric: auc
-  n_estimators: 1000
-  learning_rate: 0.05
-  num_leaves: 31
-  max_depth: -1
+  n_estimators: 900
+  learning_rate: 0.03729721063489803
+  num_leaves: 245
+  max_depth: 9
   min_child_samples: 20
-  subsample: 0.8
-  colsample_bytree: 0.8
-  random_state: 42
+  subsample: 0.8598739262103503
+  colsample_bytree: 0.7719588525051457
+  random_state: ${base.random_state}
   n_jobs: -1
