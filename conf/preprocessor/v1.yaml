@@ -1,0 +1,3 @@
+# conf/preprocessor/v1.yaml
+dir: artifacts/preprocessor
+filename: preprocessor.joblib

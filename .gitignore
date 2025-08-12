@@ -16,3 +16,6 @@ data/processed/*
 
 # Notebook checkpoints
 .ipynb_checkpoints
+
+# Hydra configurations for each ru
+outputs/

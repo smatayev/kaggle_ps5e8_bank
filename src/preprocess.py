@@ -1,62 +1,59 @@
 import os
-import yaml
+import hydra
+from omegaconf import DictConfig
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
+import joblib
+from utils import reduce_mem_usage # Import the custom memory utils function
 
-def preprocess_data(config_path):
+@hydra.main(config_path="../conf", config_name="config", version_base=None)
+def preprocess_data(cfg: DictConfig):
     """
-    Loads the Bank Marketing dataset, performs feature engineering, encoding, 
-    scaling, and saves the processed dataframes based on user's analysis.
+    Loads the raw dataset, reduces its memory usage, performs 
+    feature engineering, encoding, scaling, and saves the processed dataframes 
+    and the preprocessor object.
     """
-    # Load configuration from params.yaml
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
-
     # --- 1. Load Data & Define Paths ---
     print("1. Loading raw data...")
-    raw_dir = config['data_source']['raw_dir']
-    train_raw_path = os.path.join(raw_dir, config['data_source']['train_csv'])
-    
-    processed_dir = config['processed_data']['dir']
-    train_processed_path = os.path.join(processed_dir, config['processed_data']['train_csv'])
+    # Hydra automatically changes the working directory to the output folder.
+    # We use hydra.utils.to_absolute_path to get the correct path to our data.
+    raw_dir = hydra.utils.to_absolute_path(cfg.data_source.raw_dir)
+    train_raw_path = os.path.join(raw_dir, cfg.data_source.train_csv)
     
     df_raw = pd.read_csv(train_raw_path)
 
+    # --- 2. Reduce Memory Usage ---
+    print("\n2. Optimizing memory usage...")
+    df_raw = reduce_mem_usage(df_raw) # Apply the utility function
+
     # Separate target variable
-    target_col = 'y'
+    target_col = cfg.base.target_col
     X = df_raw.drop(columns=[target_col])
     y = df_raw[[target_col]]
 
-    # --- 2. Feature Engineering ---
-    print("2. Performing feature engineering...")
+    # --- 3. Feature Engineering ---
+    print("\n3. Performing feature engineering...")
     X['contacted_previously'] = (X['pdays'] != -1).astype(int)
     print("   - Created 'contacted_previously' feature.")
 
-    # --- 3. Define Feature Groups ---
+    # --- 4. Define Feature Groups ---
     numerical_features = ['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous']
     nominal_features = ['marital', 'contact', 'month', 'poutcome', 'job'] 
     binary_features = ['default', 'housing', 'loan']
-    ordinal_features = ['education'] # This has a specific order
+    ordinal_features = ['education']
 
-    # --- 4. Create Preprocessing Pipelines ---
-    print("4. Building preprocessing pipelines...")
-
-    # Pipeline for numerical features: Scale them.
-    numeric_transformer = Pipeline(steps=[
-        ('scaler', StandardScaler())
-    ])
-
-    # Pipeline for nominal features: Impute 'unknown', then one-hot encode.
+    # --- 5. Create Preprocessing Pipelines ---
+    print("\n5. Building preprocessing pipelines...")
+    numeric_transformer = Pipeline(steps=[('scaler', StandardScaler())])
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(missing_values='unknown', strategy='most_frequent')),
         ('onehot', OneHotEncoder(handle_unknown='ignore', drop='first'))
     ])
 
-    # Create the master preprocessor object using ColumnTransformer
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', numeric_transformer, numerical_features),
@@ -67,36 +64,34 @@ def preprocess_data(config_path):
                 ('ordinal', OrdinalEncoder(categories=[['primary', 'secondary', 'tertiary']]))
             ]), ['education'])
         ],
-        remainder='passthrough' # This will keep our new 'contacted_previously' feature
+        remainder='passthrough'
     )
 
-    # --- 5. Apply Transformations ---
-    print("5. Applying transformations to the data...")
+    # --- 6. Apply Transformations ---
+    print("\n6. Applying transformations to the data...")
     X_processed = preprocessor.fit_transform(X)
 
-    # --- 6. Recreate DataFrame & Save ---
-    print("6. Recreating processed DataFrame and saving...")
-    
-    # FIX: Use the preprocessor's get_feature_names_out() method.
-    # This is the modern, robust way to get all column names in the correct order.
+    # --- 7. Recreate DataFrame & Save Data ---
+    print("\n7. Recreating processed DataFrame and saving...")
     new_cols = preprocessor.get_feature_names_out()
-
     X_processed = pd.DataFrame(X_processed, columns=new_cols)
-    
-    # Map the target column 'y' to 1/0
     y_processed = y.replace({'yes': 1, 'no': 0})
-
-    # Combine processed features and target
     df_processed = pd.concat([X_processed, y_processed.reset_index(drop=True)], axis=1)
-
-    # Ensure the output directory exists
+    
+    # Use absolute paths for saving outputs as well
+    processed_dir = hydra.utils.to_absolute_path(cfg.processed_data.dir)
     os.makedirs(processed_dir, exist_ok=True)
+    processed_train_path = os.path.join(processed_dir, cfg.processed_data.train_csv)
+    df_processed.to_csv(processed_train_path, index=False)
     
-    df_processed.to_csv(train_processed_path, index=False)
-    
+    # --- 8. Save the Preprocessor Object ---
+    preprocessor_dir = hydra.utils.to_absolute_path(cfg.preprocessor.dir)
+    preprocessor_path = os.path.join(preprocessor_dir, cfg.preprocessor.filename)
+    os.makedirs(preprocessor_dir, exist_ok=True)
+    print(f"8. Saving preprocessor to '{preprocessor_path}'...")
+    joblib.dump(preprocessor, preprocessor_path)
+
     print("\nPreprocessing complete.")
-    print(f"Processed data shape: {df_processed.shape}")
-    print(f"Saved processed data to '{train_processed_path}'")
 
 if __name__ == '__main__':
-    preprocess_data(config_path='params.yaml')
+    preprocess_data()

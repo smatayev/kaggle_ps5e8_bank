@@ -1,39 +1,38 @@
 import os
-import yaml
+import hydra
+from omegaconf import DictConfig
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-def split_data(config_path):
+@hydra.main(config_path="../conf", config_name="config", version_base=None)
+def split_data(cfg: DictConfig):
     """
-    Loads the processed data and splits it into training and testing sets.
+    Loads the processed data and splits it into training and testing sets
+    using configuration from Hydra.
     """
-    # Load configuration from params.yaml
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
-
     # --- 1. Define Paths ---
-    processed_data_dir = config['processed_data']['dir']
-    processed_train_path = os.path.join(processed_data_dir, config['processed_data']['train_csv'])
+    processed_data_dir = hydra.utils.to_absolute_path(cfg.processed_data.dir)
+    processed_train_path = os.path.join(processed_data_dir, cfg.processed_data.train_csv)
     
-    split_data_dir = config['split_data']['dir']
-    split_train_path = os.path.join(split_data_dir, config['split_data']['train_path'])
-    split_test_path = os.path.join(split_data_dir, config['split_data']['test_path'])
+    split_data_dir = hydra.utils.to_absolute_path(cfg.split_data.dir)
+    split_train_path = os.path.join(split_data_dir, cfg.split_data.train_path)
+    split_test_path = os.path.join(split_data_dir, cfg.split_data.test_path)
 
     # --- 2. Load Processed Data ---
     print(f"Loading processed data from '{processed_train_path}'...")
     df = pd.read_csv(processed_train_path)
 
     # --- 3. Perform the Split ---
-    test_size = config['split_data']['test_size']
-    random_state = config['base']['random_state']
-    target_col = 'y' # Target column 
+    test_size = cfg.split_data.test_size
+    random_state = cfg.base.random_state
+    target_col = cfg.base.target_col
 
     print(f"Splitting data with test size: {test_size}...")
     train_df, test_df = train_test_split(
         df,
         test_size=test_size,
         random_state=random_state,
-        stratify=df[target_col] # Ensures the same proportion of target values in both sets
+        stratify=df[target_col]
     )
 
     # --- 4. Save the Split Data ---
@@ -51,4 +50,4 @@ def split_data(config_path):
 
 
 if __name__ == '__main__':
-    split_data(config_path='params.yaml')
+    split_data()
