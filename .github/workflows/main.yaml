@@ -29,32 +29,30 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Set up DVC and pull data
+      # Step 4: Set up DVC using the modern action
+      # FIX: Replaced the old 'dvc-action' with the new 'setup-dvc'
       - name: Set up DVC
-        uses: iterative/dvc-action@v0.0.9
-        with:
-          # This assumes your DVC remote is local. 
-          # For cloud remotes like GDrive/S3, you'd add credentials here.
-          # For our local remote, dvc pull will work out of the box.
-          version: latest
+        uses: iterative/setup-dvc@v1
 
+      # Step 5: Pull DVC data
+      # This step remains the same, but now runs after DVC is properly set up
       - name: Pull DVC data
-        run: dvc pull -r my_gdrive # Use the name of your local remote
+        run: dvc pull
 
-      # Step 5: Run the full pipeline to generate the submission file
+      # Step 6: Run the full pipeline to generate the submission file
       - name: Train final model
         run: python src/train_final_model.py
 
       - name: Generate predictions
         run: python src/predict.py
 
-      # Step 6: Set up Kaggle credentials from the GitHub Secret
+      # Step 7: Set up Kaggle credentials from the GitHub Secret
       - name: Set up Kaggle credentials
         run: |
           mkdir -p ~/.kaggle
           echo "${{ secrets.KAGGLE_JSON }}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
       
-      # Step 7: Submit to Kaggle
+      # Step 8: Submit to Kaggle
       - name: Submit to Kaggle
         run: python src/submit.py

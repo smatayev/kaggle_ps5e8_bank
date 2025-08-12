@@ -20,3 +20,4 @@ params:
   reg_alpha: 1.875
   reg_lambda: 2.5
   tree_method: hist
+  random_state: ${base.random_state}
