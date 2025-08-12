@@ -2,28 +2,28 @@ stages:
   preprocess:
     cmd: python3 src/preprocess.py
     deps:
+    - conf
     - data/raw
     - src/preprocess.py
+    - src/utils.py
     outs:
     - artifacts/preprocessor
     - data/processed
-    params:
-    - preprocessor
   split:
-    cmd: python src/split.py
+    cmd: python3 src/split.py
     deps:
+    - conf
     - data/processed
     - src/split.py
     outs:
     - data/split
   train_and_evaluate:
-    cmd: python src/train_and_evaluate.py
+    cmd: python3 src/train_and_evaluate.py
     deps:
+    - conf
     - data/split
     - src/train_and_evaluate.py
-    params:
-    - model
     outs:
-    - artifacts/model
+    - artifacts/model/model.joblib
     metrics:
     - artifacts/metrics/metrics.json
