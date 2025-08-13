@@ -2,4 +2,4 @@
     remote = my_gdrive
     autostage = true
 ['remote "my_gdrive"']
-    url = ../../kaggle-ps5e8-dvc-storage
+    url = gdrive://1LCSn7ZhvwC8OtAtjiMaZeI1gXxVLQK8Z
