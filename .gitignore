@@ -10,7 +10,7 @@ __pycache__/
 
 # DVC will track this
 # Ignore the large files inside data subdirectories
-data/raw/*
+# data/raw/*
 data/processed/*
 
 # Keep empty directories by tracking .gitkeep files (a common convention)
