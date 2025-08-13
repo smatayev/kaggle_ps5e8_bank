@@ -1,4 +1,4 @@
-# This is a GitHub Actions workflow that automates the ML pipeline
+# This is the final GitHub Actions workflow that automates the ML pipeline
 
 name: Kaggle Submission CI/CD
 
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9' # Match your local environment
+          python-version: '3.9'
 
       # Step 3: Install Python dependencies
       - name: Install dependencies
@@ -29,30 +29,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 4: Set up DVC using the modern action
-      # FIX: Replaced the old 'dvc-action' with the new 'setup-dvc'
-      - name: Set up DVC
-        uses: iterative/setup-dvc@v1
-
-      # Step 5: Pull DVC data
-      # This step remains the same, but now runs after DVC is properly set up
-      - name: Pull DVC data
-        run: dvc pull
-
-      # Step 6: Run the full pipeline to generate the submission file
-      - name: Train final model
-        run: python src/train_final_model.py
-
-      - name: Generate predictions
-        run: python src/predict.py
-
-      # Step 7: Set up Kaggle credentials from the GitHub Secret
+      # Step 4: Set up Kaggle credentials from the GitHub Secret
       - name: Set up Kaggle credentials
+        env:
+          KAGGLE_JSON: ${{ secrets.KAGGLE_JSON }}
         run: |
           mkdir -p ~/.kaggle
-          echo "${{ secrets.KAGGLE_JSON }}" > ~/.kaggle/kaggle.json
+          echo "$KAGGLE_JSON" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
       
-      # Step 8: Submit to Kaggle
+      # Step 5: Ingest data from Kaggle
+      - name: Download and Unzip Kaggle Data
+        run: python src/ingest_data.py
+
+      # Step 6: Run the rest of the pipeline
+      # This runs the necessary scripts in sequence to produce the submission file
+      - name: Preprocess Data, Train Model, and Predict
+        run: |
+          python src/preprocess.py
+          python src/train_final_model.py
+          python src/predict.py
+      
+      # Step 7: Submit to Kaggle
       - name: Submit to Kaggle
         run: python src/submit.py

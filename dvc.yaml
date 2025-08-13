@@ -2,7 +2,6 @@ stages:
   preprocess:
     cmd: python3 src/preprocess.py
     deps:
-    - conf
     - data/raw
     - src/preprocess.py
     - src/utils.py
@@ -27,3 +26,10 @@ stages:
     - artifacts/model/model.joblib
     metrics:
     - artifacts/metrics/metrics.json
+  ingest_data:
+    cmd: python3 src/ingest_data.py
+    deps:
+    - conf
+    - src/ingest_data.py
+    outs:
+    - data/raw
