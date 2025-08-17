@@ -1,0 +1,15 @@
+# conf/preprocessor/v3_aggregates.yaml
+defaults:
+  - v1 # Inherit base settings from the v1 config
+
+name: "v3_aggregates" # Give this version a name
+
+# Define the features to create
+aggregate_features:
+  # For each categorical column, define the numerical columns to aggregate
+  - group_by: 'job'
+    agg_cols: ['balance', 'duration']
+  - group_by: 'marital'
+    agg_cols: ['balance', 'age']
+  - group_by: 'education'
+    agg_cols: ['balance', 'age']
