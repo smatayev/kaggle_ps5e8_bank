@@ -1,0 +1,15 @@
+# conf/preprocessor/v4_target_encoding.yaml
+defaults:
+  - v1 # Inherit base settings like directory and filename
+
+name: "v4_target_encoding"
+script: "preprocess_target_encoding.py" # Point to the new script
+
+# Define which categorical columns to apply target encoding to
+target_encode_cols:
+  - 'job'
+  - 'marital'
+  - 'education'
+  - 'contact'
+  - 'month'
+  - 'poutcome'
