@@ -1,0 +1,9 @@
+# conf/model/logistic_regression.yaml
+name: LogisticRegression
+dir: artifacts/model
+filename: model.joblib
+final_filename: final_lr_model.joblib
+params:
+  C: 0.18593978427972319
+  solver: 'liblinear'
+  random_state: ${base.random_state}

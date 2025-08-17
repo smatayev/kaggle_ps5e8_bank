@@ -2,7 +2,7 @@
 name: LGBMClassifier
 dir: artifacts/model
 filename: model.joblib
-final_filename: final_model.joblib
+final_filename: final_lgbm_model.joblib
 params:
   objective: binary
   metric: auc

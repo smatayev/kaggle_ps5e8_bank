@@ -1,0 +1,16 @@
+# conf/model/lgbm_meta.yaml
+# Configuration for a simple LightGBM to be used as a meta-model
+
+name: LGBMClassifier
+dir: artifacts/model
+filename: meta_model.joblib
+final_filename: final_meta_model.joblib
+params:
+  objective: binary
+  metric: auc
+  n_estimators: 438
+  learning_rate: 0.06844398140399886
+  num_leaves: 16
+  max_depth: 2 # Keep the depth low to prevent overfitting
+  random_state: ${base.random_state}
+  n_jobs: -1

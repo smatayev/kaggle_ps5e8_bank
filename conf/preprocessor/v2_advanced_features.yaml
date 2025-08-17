@@ -1,0 +1,10 @@
+# conf/preprocessor/v2_advanced_features.yaml
+defaults:
+  - v1 # Inherit all settings from the v1 config
+
+name: "v2_advanced_features" # Give this version a name
+create_features:
+  polynomial: ['balance', 'age', 'duration']
+  interactions:
+    - ['balance', 'job'] # balance per job
+    - ['balance', 'age']  # balance to age ratio

@@ -6,20 +6,17 @@ from train_and_evaluate import train_and_evaluate
 @hydra.main(config_path="../conf", config_name="config", version_base=None)
 def optimize(cfg: DictConfig):
     """
-    Main function to run the Optuna optimization.
-    This function is decorated with Hydra to load the base configuration.
+    Main function to run the Optuna optimization for the specified model.
     """
 
     def objective(trial: optuna.trial.Trial) -> float:
         """
         This is the objective function for Optuna.
-        It takes a trial object, suggests hyperparameters, updates the config,
-        and runs the training function.
+        It suggests hyperparameters based on the model name in the config.
         """
         # Create a mutable copy of the config for this trial
         trial_cfg = cfg.copy()
         
-        # Suggest hyperparameters for Optuna to try using the 'trial' object
         # --- Dynamic Hyperparameter Search Space ---
         if trial_cfg.model.name == "XGBoostClassifier":
             trial_cfg.model.params.n_estimators = trial.suggest_int("n_estimators", 100, 1000, step=50)
@@ -35,9 +32,16 @@ def optimize(cfg: DictConfig):
             trial_cfg.model.params.max_depth = trial.suggest_int("max_depth", 3, 12)
             trial_cfg.model.params.subsample = trial.suggest_float("subsample", 0.6, 1.0)
             trial_cfg.model.params.colsample_bytree = trial.suggest_float("colsample_bytree", 0.6, 1.0)
-        
+
+        elif trial_cfg.model.name == "RandomForestClassifier":
+            trial_cfg.model.params.n_estimators = trial.suggest_int("n_estimators", 100, 1000, step=50)
+            trial_cfg.model.params.max_depth = trial.suggest_int("max_depth", 5, 20)
+            trial_cfg.model.params.min_samples_split = trial.suggest_int("min_samples_split", 2, 20)
+            trial_cfg.model.params.min_samples_leaf = trial.suggest_int("min_samples_leaf", 1, 10)
+
         else:
-            raise ValueError(f"Optimization not configured for model: {trial_cfg.model.name}")
+            # placeholder for other models here
+            pass
 
         # Run the training and evaluation function with the new config
         try:
@@ -45,14 +49,13 @@ def optimize(cfg: DictConfig):
             return auc_score
         except Exception as e:
             print(f"Trial failed with error: {e}")
-            # Tell Optuna to prune the trial if it fails
             raise optuna.exceptions.TrialPruned()
 
-    # Create an Optuna study. We want to maximize the AUC score.
+    # Create an Optuna study to maximize the AUC score
     study = optuna.create_study(direction="maximize")
     
-    # Start the optimization process, passing the inner 'objective' function
-    study.optimize(objective, n_trials=20)
+    # Start the optimization process
+    study.optimize(objective, n_trials=50)
 
     print("\nOptimization finished.")
     print("Best trial:")

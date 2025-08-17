@@ -1,0 +1,13 @@
+# This is the main configuration for the stacking ensemble
+
+# A simple list of the base model config file names (without .yaml)
+base_models:
+  - xgboost
+  - lightgbm
+  - random_forest
+
+# The name of the meta model config file
+meta_model: lgbm_meta
+
+# General parameters for the stacking process
+n_folds: 5

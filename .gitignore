@@ -26,3 +26,6 @@ outputs/
 
 # Submission file
 submission.csv
+submission_stacking.csv
+submission_final_blend.csv
+submission_simple_avg.csv

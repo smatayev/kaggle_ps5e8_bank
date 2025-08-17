@@ -2,7 +2,7 @@
 name: XGBoostClassifier
 dir: artifacts/model
 filename: model.joblib
-final_filename: final_model.joblib
+final_filename: final_xgb_model.joblib
 params:
   # --- Updated with Optuna's best trial results ---
   n_estimators: 500
